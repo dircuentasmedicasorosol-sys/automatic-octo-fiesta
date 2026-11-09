@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auditoría Coordinación - Orosol Transportes S.A.S.</title>
+
+  <!-- Ícono de la pestaña, embebido en el propio HTML para que no dependa de un archivo aparte -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230284c7'/%3E%3Ccircle cx='27' cy='27' r='12' fill='none' stroke='%23ffffff' stroke-width='5'/%3E%3Cline x1='36' y1='36' x2='47' y2='47' stroke='%23ffffff' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    :root {
+      --orosol-blue: #0284c7;
+      --orosol-dark: #1e293b;
+      --orosol-gold: #d4af37;
+      --orosol-red: #b91c1c;
+      --orosol-orange: #ea580c;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --border: #cbd5e1;
+      --success: #16a34a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 24px;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--orosol-dark), #0f172a);
+      color: white;
+      padding: 20px 32px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      border-bottom: 5px solid var(--orosol-gold);
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.15);
+    }
+
+    .brand-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand-logo {
+      height: 60px;
+      width: auto;
+      background: white;
+      padding: 4px 8px;
+      border-radius: 8px;
+      object-fit: contain;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    header h1 span {
+      color: var(--orosol-gold);
+    }
+
+    header p {
+      font-size: 0.85rem;
+      opacity: 0.85;
+      margin-top: 4px;
+    }
+
+    .btn-upload {
+      position: relative;
+      background-color: var(--orosol-gold);
+      color: var(--orosol-dark);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      cursor: pointer;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      transition: all 0.2s ease;
+      display: inline-block;
+    }
+
+    .btn-upload:hover {
+      background-color: #facc15;
+      transform: translateY(-1px);
+    }
+
+    .btn-upload input[type=file] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .config-panel {
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      border-left: 5px solid var(--orosol-gold);
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .config-panel h3 {
+      font-size: 1rem;
+      color: var(--orosol-dark);
+      margin-bottom: 10px;
+    }
+
+    .exclusive-input-group {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .exclusive-input-group input {
+      flex: 1;
+      min-width: 250px;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      outline: none;
+      font-size: 0.9rem;
+    }
+
+    .btn-action {
+      background-color: var(--orosol-blue);
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-action:hover {
+      background-color: #0284c7;
+    }
+
+    .tags-container {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      background-color: #f1f5f9;
+      color: #334155;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .tag button {
+      background: none;
+      border: none;
+      color: var(--orosol-red);
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .kpi-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      border-top: 4px solid var(--orosol-blue);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .kpi-card .title {
+      font-size: 0.7rem;
+      color: #64748b;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .kpi-card .number {
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin-top: 8px;
+    }
+
+    .panel {
+      background: var(--card-bg);
+      padding: 24px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .panel h2 {
+      font-size: 1.25rem;
+      margin-bottom: 20px;
+      color: var(--orosol-dark);
+      border-bottom: 2px solid #f1f5f9;
+      padding-bottom: 10px;
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .filter-bar input, .filter-bar select {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      outline: none;
+      font-size: 0.9rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background-color: #f8fafc;
+      color: #475569;
+      font-weight: 700;
+    }
+
+    tr:hover {
+      background-color: #f8fafc;
+    }
+
+    .badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: white;
+      display: inline-block;
+    }
+
+    .badge.critico { background-color: var(--orosol-red); }
+    .badge.exclusivo-compartido { background-color: #8b5cf6; }
+    .badge.advertencia { background-color: var(--orosol-gold); color: #0f172a; }
+    .badge.zona-incompatible { background-color: var(--orosol-orange); }
+    .badge.info { background-color: var(--orosol-blue); }
+    .badge.valido { background-color: var(--success); }
+    .badge.caso-especial { background-color: #0d9488; }
+    .badge.sin-flota { background-color: #334155; }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #94a3b8;
+      font-size: 1rem;
+    }
+
+    .moviles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 12px;
+    }
+
+    .movil-chip {
+      border: 1px solid var(--border);
+      border-left: 4px solid #94a3b8;
+      border-radius: 10px;
+      background: #f8fafc;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .movil-chip:hover {
+      background: #eef2f7;
+      transform: translateY(-1px);
+    }
+
+    .movil-chip.grave { border-left-color: var(--orosol-red); }
+    .movil-chip.medio { border-left-color: var(--orosol-orange); }
+    .movil-chip.leve { border-left-color: var(--orosol-gold); }
+
+    .movil-chip.activa {
+      background: var(--orosol-dark);
+      border-color: var(--orosol-dark);
+      color: white;
+      box-shadow: 0 4px 10px -2px rgba(15, 23, 42, 0.4);
+    }
+
+    .movil-chip .movil-id {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .movil-chip .movil-cuentas {
+      margin-top: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #475569;
+    }
+
+    .movil-chip.activa .movil-cuentas { color: #cbd5e1; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand-container">
+      <img src="logo.png" class="brand-logo" alt="Orosol Logo" onerror="this.style.display='none'">
+      <div>
+        <h1>Auditoría Coordinación <span>Orosol S.A.S.</span></h1>
+        <p>Control de corredores viales, zonas (Norte, Centro, Sur), capacidad (Máx. 2) y bases - Tolima</p>
+      </div>
+    </div>
+    <div class="btn-upload">
+      📁 Seleccionar archivo Excel (Asignación de móviles o Traslados)
+      <input type="file" id="excelInput" accept=".xlsx, .xls" onchange="procesarArchivo(event)" />
+    </div>
+  </header>
+
+  <div class="config-panel">
+    <h3>🚫 Pacientes Exclusivos (Que NO pueden compartir vehículo)</h3>
+    <div class="exclusive-input-group">
+      <input type="text" id="inputPacienteExclusivo" placeholder="Escriba el nombre del paciente (ej. Zuñiga)..." />
+      <button class="btn-action" onclick="agregarPacienteExclusivo()">+ Agregar Exclusivo</button>
+    </div>
+    <div class="tags-container" id="listaExclusivos">
+      <span style="font-size: 0.85rem; color: #64748b; font-style: italic;">Sin restricciones de exclusividad activas.</span>
+    </div>
+  </div>
+
+  <div class="kpi-container">
+    <div class="kpi-card">
+      <div class="title">Servicios revisados</div>
+      <div class="number" id="kpiServicios" style="color: var(--success);">0</div>
+    </div>
+    <div class="kpi-card">
+      <div class="title" id="kpiCanceladosTitulo">Cancelados / Anulados excluidos</div>
+      <div class="number" id="kpiCancelados" style="color: var(--orosol-red);">0</div>
+    </div>
+    <div class="kpi-card">
+      <div class="title">Móviles con servicios</div>
+      <div class="number" id="kpiVehiculos" style="color: var(--orosol-blue);">0</div>
+    </div>
+    <div class="kpi-card">
+      <div class="title">Servicios con acompañante</div>
+      <div class="number" id="kpiUsuariosCompartidos" style="color: #0ea5e9;">0</div>
+    </div>
+    <div class="kpi-card">
+      <div class="title">Exclusivos acompañados</div>
+      <div class="number" id="kpiExclusivosCompartidos" style="color: #8b5cf6;">0</div>
+    </div>
+    <div class="kpi-card">
+      <div class="title">Fuera de su zona</div>
+      <div class="number" id="kpiInconsistenciasZona" style="color: var(--orosol-orange);">0</div>
+    </div>
+    <div class="kpi-card">
+      <div class="title">Conflictos de cupo y horario</div>
+      <div class="number" id="kpiConflictos" style="color: var(--orosol-red);">0</div>
+    </div>
+    <div class="kpi-card">
+      <div class="title">Tramos sin pasajeros</div>
+      <div class="number" id="kpiVacio" style="color: var(--orosol-gold);">0</div>
+    </div>
+    <div class="kpi-card">
+      <div class="title">No registrados en flota</div>
+      <div class="number" id="kpiSinFlota" style="color: var(--orosol-red);">0</div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom: 24px;">
+    <h2>Móviles con inconsistencias en las asignaciones</h2>
+    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 16px;">
+      Haga clic en un móvil para desplegar abajo los criterios que se le encontraron.
+    </p>
+    <div class="moviles-grid" id="listaMoviles">
+      <span style="font-size: 0.85rem; color: #94a3b8; font-style: italic;">Sin datos todavía.</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Reporte Consolidado de Auditoría Orosol</h2>
+    
+    <div class="filter-bar">
+      <select id="filtroTipo" onchange="filtrarResultados()">
+        <option value="TODOS">Todos los hallazgos</option>
+        <option value="ZONA_INCOMPATIBLE" id="opFiltroZona">Trabajó fuera de su zona asignada</option>
+        <option value="EXCLUSIVO_COMPARTIDO">Paciente exclusivo viajó acompañado</option>
+        <option value="CRITICO">Conflictos: cupo, misma hora y horarios cruzados</option>
+        <option value="ADVERTENCIA">Se movió sin pasajeros</option>
+        <option value="CASO_ESPECIAL">Caso especial: trayecto confuso (revisar)</option>
+        <option value="SIN_FLOTA" id="opFiltroSinFlota">Móvil no registrado en la flota</option>
+      </select>
+      <input type="text" id="filtroVehiculo" placeholder="Buscar por Móvil..." onkeyup="filtrarResultados()">
+      <button class="btn-action" id="btnVerTodos" onclick="verTodosMoviles()" style="display: none;">Ver todos los móviles</button>
+    </div>
+
+    <div style="overflow-x: auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Tipo / Estado</th>
+            <th>Móvil</th>
+            <th>Fecha</th>
+            <th>Detalle de Auditoría Coordinación</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyHallazgos">
+          <tr>
+            <td colspan="4" class="empty-state">Seleccione su archivo Excel para ejecutar la auditoría.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let hallazgosGlobales = [];
+    let pacientesExclusivos = [];
+    let datosUltimoExcel = null;
+    let canceladosExcluidos = { traeColumna: false, cantidad: 0 };
+
+    function normalizar(texto) {
+      return String(texto || '').trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    }
+
+    // Mismo criterio que el dashboard: un servicio solo deja de existir cuando está Cancelado o
+    // Anulado. Fallido, No Realizado, Rechazado y Devuelto sí se auditan.
+    const ESTADO_INVALIDO_RE = /^(CANCELAD|ANULAD)/;
+    const estaCancelado = (estado) => ESTADO_INVALIDO_RE.test(normalizar(estado));
+
+    // MAPEO DE ZONAS
+    const municipiosZonas = {
+      NORTE: [
+        "HONDA", "MURILLO", "LIBANO", "PALOCABILDO", "MARIQUITA", "AMBALEMA", "ALVARADO", 
+        "HERVEO", "FRESNO", "LERIDA", "VENADILLO", "ARMERO", "ANZOATEGUI", "PIEDRAS", 
+        "FALAN", "MANIZALES", "CASABIANCA", "VILLAHERMOSA", "SANTA ISABEL", "JUNIN", "VICTORIA"
+      ],
+      CENTRO: [
+        "IBAGUE", "SAN LUIS", "CAJAMARCA", "ROVIRA", "VALLE DE SAN JUAN", "CALI", 
+        "ARMENIA", "CALARCA", "PAYANDE", "DOIMA", "TEBAIDA", "RODEITOS", "BOGOTA", "COELLO"
+      ],
+      SUR: [
+        "ESPINAL", "COYAIMA", "CHAPARRAL", "PURIFICACION", "ATACO", "GUAMO", "SALDANA", 
+        "PLANADAS", "SAN ANTONIO", "PRADO", "ORTEGA", "NEIVA", "DOLORES", "CHICORAL", 
+        "NATAGAIMA", "RIOBLANCO", "CUNDAY", "CARMEN DE APICALA", "SUAREZ"
+      ],
+      // Zona propia confirmada por operación: no es Norte aunque el camino hacia
+      // Ibagué pase por Honda. Agrupa el Magdalena Medio y sus accesos por occidente
+      // y por el norte, según la asignación de la operación (2026-10-19).
+      "MAGDALENA MEDIO": [
+        "PUERTO BOYACA", "LA DORADA", "PUERTO SALGAR", "BARRANCABERMEJA",
+        "PUERTO TRIUNFO", "RIONEGRO", "GUADUAS", "PEREIRA",
+        "SANTA ROSA DE CABAL", "LA VIRGINIA", "DUITAMA", "TUNJA"
+      ]
+    };
+
+    function obtenerZonaMunicipio(ciudad) {
+      const cNorm = normalizar(ciudad);
+      for (const [zona, municipios] of Object.entries(municipiosZonas)) {
+        if (municipios.some(m => normalizar(m) === cNorm)) {
+          return zona;
+        }
+      }
+      return null;
+    }
+
+    // CORREDORES VIALES
+    const corredoresVialesRutas = [
+      ["BOGOTA", "HONDA", "MARIQUITA", "ARMERO", "LERIDA", "VENADILLO", "ALVARADO", "IBAGUE", "CAJAMARCA"],
+      ["VICTORIA", "HONDA", "MARIQUITA", "ARMERO", "LERIDA", "VENADILLO", "ALVARADO", "IBAGUE", "CAJAMARCA"],
+      ["HERVEO", "FRESNO", "MARIQUITA", "HONDA", "BOGOTA"],
+      ["HERVEO", "FRESNO", "MARIQUITA", "ARMERO", "LERIDA", "VENADILLO", "ALVARADO", "IBAGUE"],
+      ["FRESNO", "PALOCABILDO", "FALAN", "ARMERO", "LERIDA", "VENADILLO", "ALVARADO", "IBAGUE"],
+      ["CASABIANCA", "VILLAHERMOSA", "LIBANO", "ARMERO", "LERIDA", "VENADILLO", "ALVARADO", "IBAGUE"],
+      ["MURILLO", "LIBANO", "ARMERO", "LERIDA", "VENADILLO", "ALVARADO", "IBAGUE"],
+      ["SANTA ISABEL", "VENADILLO", "ALVARADO", "IBAGUE"],
+      ["ANZOATEGUI", "ALVARADO", "IBAGUE"],
+      ["AMBALEMA", "LERIDA", "VENADILLO", "ALVARADO", "IBAGUE"],
+      ["PIEDRAS", "ALVARADO", "IBAGUE", "COELLO", "ESPINAL", "BOGOTA"],
+      ["ROVIRA", "IBAGUE", "COELLO", "ESPINAL", "SUAREZ", "CARMEN DE APICALA", "CUNDAY"],
+      ["IBAGUE", "COELLO", "ESPINAL", "GUAMO", "SALDANA", "COYAIMA", "ATACO", "PLANADAS"],
+      ["BOGOTA", "ESPINAL", "GUAMO", "SALDANA", "PURIFICACION", "PRADO", "DOLORES"],
+      ["IBAGUE", "COELLO", "ESPINAL", "GUAMO", "SALDANA", "PURIFICACION", "PRADO", "DOLORES"],
+      ["CHAPARRAL", "ORTEGA", "ESPINAL", "IBAGUE"],
+      ["IBAGUE", "VALLE DE SAN JUAN", "SAN LUIS", "ORTEGA", "CHAPARRAL", "SAN ANTONIO"],
+      ["IBAGUE", "VALLE DE SAN JUAN", "SAN LUIS", "ORTEGA", "CHAPARRAL", "RIOBLANCO"],
+      ["IBAGUE", "COELLO", "ESPINAL", "GUAMO", "SAN LUIS", "ORTEGA", "CHAPARRAL", "RIOBLANCO"],
+      ["PUERTO BOYACA", "LA DORADA", "HONDA", "MARIQUITA", "ARMERO", "LERIDA", "VENADILLO", "ALVARADO", "IBAGUE"],
+      ["PUERTO BOYACA", "HONDA", "MARIQUITA", "ARMERO", "LERIDA", "VENADILLO", "ALVARADO", "IBAGUE"],
+      ["LA DORADA", "HONDA", "MARIQUITA", "ARMERO", "LERIDA", "VENADILLO", "ALVARADO", "IBAGUE"],
+      // Magdalena Medio y su salida al altiplano. Cada tramo está respaldado por
+      // recorridos reales del histórico (ver duracionesRutas), no por suposición.
+      ["PUERTO SALGAR", "LA DORADA", "PUERTO BOYACA"],
+      ["PUERTO SALGAR", "HONDA", "MARIQUITA", "ARMERO", "LERIDA", "VENADILLO", "ALVARADO", "IBAGUE"],
+      ["PUERTO BOYACA", "LA DORADA", "HONDA", "GUADUAS", "BOGOTA"],
+      ["BOGOTA", "GUADUAS", "HONDA", "MARIQUITA", "ARMERO", "LERIDA", "VENADILLO", "ALVARADO", "IBAGUE"],
+      // Eje de Occidente: Manizales baja al Tolima por Herveo, por Aguadas-Fresno
+      // o por Líbano.
+      ["MANIZALES", "HERVEO", "FRESNO", "MARIQUITA", "HONDA", "BOGOTA"],
+      ["MANIZALES", "HERVEO", "FRESNO", "PALOCABILDO", "FALAN", "ARMERO", "LERIDA", "VENADILLO", "ALVARADO", "IBAGUE"],
+      ["MANIZALES", "AGUADAS", "FRESNO", "PALOCABILDO", "FALAN", "ARMERO", "LERIDA", "VENADILLO", "ALVARADO", "IBAGUE"],
+      ["MANIZALES", "LIBANO", "CASABIANCA", "ARMERO", "LERIDA", "VENADILLO", "ALVARADO", "IBAGUE"],
+      // Eje Risaralda/Quindío hacia Cajamarca e Ibagué.
+      ["SANTA ROSA DE CABAL", "PEREIRA", "LA VIRGINIA"],
+      ["SANTA ROSA DE CABAL", "ARMENIA", "CAJAMARCA", "IBAGUE"],
+      // Neiva por el corredor del magdalena sur.
+      ["NEIVA", "SALDANA", "GUAMO", "ESPINAL", "COELLO", "IBAGUE"]
+    ];
+
+    const corredoresViales = corredoresVialesRutas.map(ruta => ruta.map(ciudad => normalizar(ciudad)));
+
+    // PRONOSTICO DE DURACION DE CADA TRAYECTO (minutos).
+    // El Excel NO aporta la hora de llegada: se estima sumando a la hora de recogida la
+    // mediana de lo que tardaron sus propios viajes entre esos dos pueblos (histórico de
+    // Traslados del 8 al 18 de octubre, 6.287 viajes). Con esa hora aproximada el programa
+    // sabe si el móvil alcanza a terminar un servicio antes de la siguiente recogida.
+    // Rutas con menos de 5 viajes históricos no están: se estima por pueblos vecinos.
+    const duracionesRutas = {
+'SAN LUIS>IBAGUE':90,      'IBAGUE>SAN LUIS':90,      'LIBANO>IBAGUE':150,
+'IBAGUE>LIBANO':135,      'IBAGUE>ESPINAL':75,      'ESPINAL>IBAGUE':75,
+'PUERTO BOYACA>IBAGUE':255,      'IBAGUE>PUERTO BOYACA':240,      'IBAGUE>MARIQUITA':120,
+'MARIQUITA>IBAGUE':120,      'LA DORADA>IBAGUE':180,      'IBAGUE>LA DORADA':165,
+'GUAMO>IBAGUE':105,      'IBAGUE>GUAMO':105,      'VENADILLO>IBAGUE':75,
+'IBAGUE>VENADILLO':75,      'SALDANA>IBAGUE':90,      'IBAGUE>SALDANA':90,
+'PURIFICACION>IBAGUE':120,      'IBAGUE>PURIFICACION':120,      'PUERTO BOYACA>HONDA':120,
+'HONDA>PUERTO BOYACA':120,      'IBAGUE>CHAPARRAL':180,      'CHAPARRAL>IBAGUE':180,
+'LERIDA>IBAGUE':90,      'IBAGUE>LERIDA':90,      'IBAGUE>FRESNO':180,      'FRESNO>IBAGUE':180,
+'HONDA>IBAGUE':150,      'IBAGUE>HONDA':150,      'PUERTO BOYACA>BOGOTA':330,
+'BOGOTA>PUERTO BOYACA':300,      'CAJAMARCA>IBAGUE':60,      'IBAGUE>CAJAMARCA':60,
+'HONDA>MARIQUITA':60,      'ARMERO>IBAGUE':120,      'IBAGUE>ARMERO':120,
+'MARIQUITA>HONDA':45,      'GUAMO>ESPINAL':60,      'HONDA>LA DORADA':60,
+'COYAIMA>IBAGUE':120,      'IBAGUE>COYAIMA':120,      'LA DORADA>HONDA':60,
+'ALVARADO>IBAGUE':75,      'IBAGUE>ALVARADO':60,      'AMBALEMA>IBAGUE':120,
+'IBAGUE>AMBALEMA':90,      'VENADILLO>LERIDA':30,      'LERIDA>VENADILLO':30,
+'ESPINAL>GUAMO':60,      'IBAGUE>ORTEGA':120,      'ESPINAL>CHAPARRAL':120,
+'CHAPARRAL>ESPINAL':120,      'IBAGUE>PRADO':120,      'ORTEGA>IBAGUE':135,
+'IBAGUE>PLANADAS':120,      'PRADO>IBAGUE':120,      'VALLE DE SAN JUAN>IBAGUE':75,
+'IBAGUE>VALLE DE SAN JUAN':75,      'ANZOATEGUI>IBAGUE':240,      'IBAGUE>ANZOATEGUI':240,
+'LIBANO>BOGOTA':300,      'PLANADAS>IBAGUE':300,      'ATACO>IBAGUE':180,
+'BOGOTA>LIBANO':300,      'IBAGUE>ATACO':180,      'PUERTO BOYACA>RIONEGRO':225,
+'PUERTO BOYACA>LA DORADA':90,      'RIONEGRO>PUERTO BOYACA':225,
+'LA DORADA>PUERTO BOYACA':90,      'IBAGUE>BOGOTA':240,      'PALOCABILDO>IBAGUE':180,
+'PIEDRAS>IBAGUE':90,      'IBAGUE>PALOCABILDO':120,      'SALDANA>ESPINAL':60,
+'IBAGUE>PIEDRAS':90,      'ESPINAL>SALDANA':60,      'MARIQUITA>BOGOTA':270,
+'MURILLO>IBAGUE':135,      'SALDANA>PURIFICACION':45,      'PURIFICACION>SALDANA':45,
+'BOGOTA>MARIQUITA':270,      'IBAGUE>MURILLO':135,      'BOGOTA>IBAGUE':240,
+'GUADUAS>IBAGUE':180,      'PUERTO BOYACA>LIBANO':225,      'PURIFICACION>ESPINAL':60,
+'IBAGUE>GUADUAS':180,      'LIBANO>PUERTO BOYACA':210,      'ESPINAL>PURIFICACION':30,
+'SANTA ISABEL>IBAGUE':135,      'PUERTO SALGAR>HONDA':60,      'HONDA>PUERTO SALGAR':60,
+'IBAGUE>SANTA ISABEL':135,      'NEIVA>PUERTO BOYACA':390,      'HERVEO>MANIZALES':90,
+'MANIZALES>HERVEO':90,      'PUERTO SALGAR>IBAGUE':210,      'ROVIRA>IBAGUE':60,
+'IBAGUE>ROVIRA':75,      'IBAGUE>PUERTO SALGAR':210,      'COELLO>IBAGUE':60,
+'IBAGUE>COELLO':60,      'PUERTO BOYACA>NEIVA':360,      'SAN ANTONIO>IBAGUE':60,
+'PURIFICACION>BOGOTA':330,      'BOGOTA>PURIFICACION':240,      'IBAGUE>SAN ANTONIO':60,
+'SANTA ROSA DE CABAL>PEREIRA':45,      'PEREIRA>SANTA ROSA DE CABAL':45,
+'CHAPARRAL>BOGOTA':300,      'BOGOTA>CHAPARRAL':300,      'GUADUAS>BOGOTA':270,
+'BOGOTA>GUADUAS':240,      'ESPINAL>BOGOTA':265,      'CASABIANCA>IBAGUE':180,
+'HONDA>BOGOTA':240,      'SAMANA>HONDA':150,      'AGUADAS>MANIZALES':240,
+'BOGOTA>ESPINAL':240,      'QUINCHIA>PEREIRA':150,      'SAN LUIS>ESPINAL':60,
+'IBAGUE>DOLORES':188,      'HONDA>SAMANA':150,      'ESPINAL>SAN LUIS':60,
+'IBAGUE>CASABIANCA':180,      'PEREIRA>QUINCHIA':240,      'MANIZALES>AGUADAS':180,
+'FRESNO>LIBANO':120,      'PUERTO BOYACA>TUNJA':450,      'LIBANO>FRESNO':120,
+'DOLORES>IBAGUE':210,      'ARMERO>BOGOTA':240,      'BOGOTA>HONDA':240,
+'BOGOTA>ARMERO':180,      'SALDANA>BOGOTA':300,      'BOGOTA>SALDANA':300,
+'TUNJA>PUERTO BOYACA':420,
+    };
+
+    function duracionTrayecto(origen, destino) {
+      const o = normalizar(origen), d = normalizar(destino);
+      if (!o || !d) return null;
+      if (o === d) return 30;
+      if (duracionesRutas[o + '>' + d] != null) return duracionesRutas[o + '>' + d];
+      if (duracionesRutas[d + '>' + o] != null) return duracionesRutas[d + '>' + o];
+      const vecinas = Object.keys(duracionesRutas).filter(k => {
+        const p = k.split('>');
+        return p[0] === o || p[1] === d;
+      });
+      if (vecinas.length === 0) return null;
+      const media = vecinas.reduce((s, k) => s + duracionesRutas[k], 0) / vecinas.length;
+      return Math.round(media / 15) * 15;
+    }
+
+    // Devuelve la hora (HH:MM:SS) a la que aproximadamente termina el servicio.
+    function llegadaAproximada(horaRecogida, origen, destino) {
+      const base = mins(horaRecogida);
+      const minutos = duracionTrayecto(origen, destino);
+      if (base == null || minutos == null) return '';
+      const t = (base + minutos) % 1440;
+      return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0') + ':00';
+    }
+
+    function agregarPacienteExclusivo() {
+      const input = document.getElementById('inputPacienteExclusivo');
+      const val = input.value.trim();
+      if (!val) return;
+
+      if (!pacientesExclusivos.includes(val.toUpperCase())) {
+        pacientesExclusivos.push(val.toUpperCase());
+        actualizarTagsExclusivos();
+        input.value = '';
+
+        if (datosUltimoExcel) {
+          evaluarReglas(datosUltimoExcel.servicios, datosUltimoExcel.flota);
+        }
+      }
+    }
+
+    function eliminarPacienteExclusivo(nombre) {
+      pacientesExclusivos = pacientesExclusivos.filter(item => item !== nombre);
+      actualizarTagsExclusivos();
+      if (datosUltimoExcel) {
+        evaluarReglas(datosUltimoExcel.servicios, datosUltimoExcel.flota);
+      }
+    }
+
+    function actualizarTagsExclusivos() {
+      const contenedor = document.getElementById('listaExclusivos');
+      contenedor.innerHTML = '';
+
+      if (pacientesExclusivos.length === 0) {
+        contenedor.innerHTML = '<span style="font-size: 0.85rem; color: #64748b; font-style: italic;">Sin restricciones de exclusividad activas.</span>';
+        return;
+      }
+
+      pacientesExclusivos.forEach(nombre => {
+        const tag = document.createElement('div');
+        tag.className = 'tag';
+        tag.innerHTML = `${nombre} <button onclick="eliminarPacienteExclusivo('${nombre}')">&times;</button>`;
+        contenedor.appendChild(tag);
+      });
+    }
+
+    function mins(horaStr) {
+      if (!horaStr) return null;
+      const partes = String(horaStr).split(':');
+      if (partes.length < 2) return null;
+      const h = parseInt(partes[0], 10);
+      const m = parseInt(partes[1], 10);
+      if (isNaN(h) || isNaN(m)) return null;
+      return h * 60 + m;
+    }
+
+    // Convierte la fecha a texto legible (soporta número de serie de Excel, Date o texto)
+    function formatearFecha(valor) {
+      if (valor == null || valor === '') return '';
+      if (valor instanceof Date && !isNaN(valor.getTime())) {
+        return valor.toLocaleDateString('es-CO');
+      }
+      const s = String(valor).trim();
+      if (/^\d{5}(\.\d+)?$/.test(s)) {
+        const d = new Date(Date.UTC(1899, 11, 30) + parseFloat(s) * 86400000);
+        if (!isNaN(d.getTime())) return d.toLocaleDateString('es-CO', { timeZone: 'UTC' });
+      }
+      return s;
+    }
+
+    // Los móviles son texto de 4 dígitos ("0701", "2713"). Se comparan como texto
+    // igualado a 4 posiciones para que 0701 vaya antes que 0702.
+    function compararMoviles(a, b) {
+      const pa = String(a || '').trim().padStart(4, '0');
+      const pb = String(b || '').trim().padStart(4, '0');
+      if (pa === pb) return 0;
+      return pa < pb ? -1 : 1;
+    }
+
+    // "14/10/2026" -> 20261014 y "2026-10-14" -> 20261014 para poder ordenar.
+    // Excel entrega la fecha en formato ISO y la hoja coordinacion la muestra en
+    // español; si el texto no tiene ninguno de los dos formatos devuelve null y el
+    // orden original se mantiene.
+    function claveFecha(fechaTexto) {
+      const s = String(fechaTexto || '').trim();
+      const iso = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(s);
+      if (iso) return (+iso[1]) * 10000 + (+iso[2]) * 100 + (+iso[3]);
+      const partes = s.split('/');
+      if (partes.length !== 3) return null;
+      const dia = parseInt(partes[0], 10);
+      const mes = parseInt(partes[1], 10);
+      const anio = parseInt(partes[2], 10);
+      if (isNaN(dia) || isNaN(mes) || isNaN(anio)) return null;
+      return anio * 10000 + mes * 100 + dia;
+    }
+
+    function buscarColumna(objeto, nombresPosibles) {
+      const llaves = Object.keys(objeto);
+      for (let llave of llaves) {
+        const norm = normalizar(llave);
+        for (let posible of nombresPosibles) {
+          if (norm.includes(normalizar(posible))) {
+            return objeto[llave];
+          }
+        }
+      }
+      return '';
+    }
+
+    // Busca una columna por su nombre EXACTO (sin acentos, sin mayúsculas) y solo si
+    // no existe recurre al busca-por-contenido de arriba. Hace falta porque el archivo
+    // de Traslados trae columnas "Origen" y "Destino" antes de "Ciudad Origen" y
+    // "Ciudad Destino", y esas traen "Domicilio" o el nombre de la clínica, no el municipio.
+    function columnaPorNombre(objeto, nombresPosibles) {
+      const llaves = Object.keys(objeto);
+      for (let posible of nombresPosibles) {
+        const buscado = normalizar(posible);
+        const exacta = llaves.find(llave => normalizar(llave) === buscado);
+        if (exacta !== undefined) return objeto[exacta];
+      }
+      return buscarColumna(objeto, nombresPosibles);
+    }
+
+    function esRecogidaEnCorredorValida(orig1, dest1, orig2, dest2) {
+      const o1 = normalizar(orig1);
+      const d1 = normalizar(dest1);
+      const o2 = normalizar(orig2);
+      const d2 = normalizar(dest2);
+
+      for (let corredor of corredoresViales) {
+        const idxO1 = corredor.indexOf(o1);
+        const idxO2 = corredor.indexOf(o2);
+        const idxD1 = corredor.indexOf(d1);
+        const idxD2 = corredor.indexOf(d2);
+
+        if (idxO1 !== -1 && idxO2 !== -1 && idxD1 !== -1 && idxD2 !== -1) {
+          if (idxO1 <= idxD1 && idxO2 <= idxD2) {
+            if (idxO1 <= idxO2) return true;
+          } else if (idxO1 >= idxD1 && idxO2 >= idxD2) {
+            if (idxO1 >= idxO2) return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    // Elige las hojas por lo que contienen, no por el orden en el Excel:
+    // "coordinacion" + "carros" en la Asignación de móviles, y una sola hoja
+    // "Traslados" (que no trae flota) en el export diario de traslados.
+    function elegirHojas(hojas) {
+      const traeColumna = (hoja, nombres) => Object.keys(hoja.filas[0]).some(llave =>
+        nombres.some(posible => normalizar(llave).includes(normalizar(posible))));
+
+      const hojaServicios = hojas.find(h =>
+        traeColumna(h, ['Paciente']) && traeColumna(h, ['Vehiculo', 'Movil', 'Carro']));
+      const hojaFlota = hojas.find(h => h !== hojaServicios &&
+        traeColumna(h, ['Vehiculo', 'Movil', 'Carro']) && traeColumna(h, ['Zona']));
+
+      return { hojaServicios, hojaFlota };
+    }
+
+    // Las columnas que se leen del Excel. En la Asignación de móviles son Fecha, Paciente,
+    // Vehiculo, Hora Recogida, Ciudad Origen y Ciudad Destino; en Traslados son B, E, I, C,
+    // AC y AG, más D (Estado). Documento (F) está pero ninguna regla la usa. La hora de llegada
+    // NO se lee: se estima con duracionTrayecto, así que la columna AA se ignora como las demás.
+    function mapearServicios(filasRaw) {
+      return filasRaw.map(s => {
+        const servicio = {
+          Vehiculo: String(columnaPorNombre(s, ['Vehiculo', 'Movil', 'Carro'])).trim(),
+          Fecha: String(columnaPorNombre(s, ['Fecha'])).trim(),
+          Estado: String(columnaPorNombre(s, ['Estado'])).trim(),
+          HoraRecogida: columnaPorNombre(s, ['Hora Recogida', 'Hora_Recogida', 'Recogida', 'Hora']),
+          CiudadOrigen: String(columnaPorNombre(s, ['Ciudad Origen', 'Ciudad_Origen', 'Origen'])).trim(),
+          CiudadDestino: String(columnaPorNombre(s, ['Ciudad Destino', 'Ciudad_Destino', 'Destino'])).trim(),
+          Paciente: String(columnaPorNombre(s, ['Paciente', 'Usuario', 'Pasajero', 'Cliente'])).trim(),
+          HoraLlegada: llegadaAproximada(
+            columnaPorNombre(s, ['Hora Recogida', 'Hora_Recogida', 'Recogida', 'Hora']),
+            columnaPorNombre(s, ['Ciudad Origen', 'Ciudad_Origen', 'Origen']),
+            columnaPorNombre(s, ['Ciudad Destino', 'Ciudad_Destino', 'Destino']))
+        };
+        return servicio;
+      });
+    }
+
+    function mapearFlota(filasRaw) {
+      return filasRaw.map(c => ({
+        vehiculo: String(columnaPorNombre(c, ['Vehiculo', 'Movil', 'Carro'])).trim(),
+        BASE: String(columnaPorNombre(c, ['Ciudad', 'Base'])).trim(),
+        ZONA: String(columnaPorNombre(c, ['Zona'])).trim()
+      }));
+    }
+
+    function procesarArchivo(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+
+          const nombresHojas = workbook.SheetNames;
+          if (nombresHojas.length === 0) {
+            alert("El archivo Excel no contiene hojas.");
+            return;
+          }
+
+          const hojas = nombresHojas.map(nombre => ({
+            nombre,
+            filas: XLSX.utils.sheet_to_json(workbook.Sheets[nombre], { raw: false })
+          })).filter(h => h.filas.length > 0);
+
+          const hojaElegida = elegirHojas(hojas);
+          if (!hojaElegida.hojaServicios) {
+            alert("El archivo no tiene una hoja de servicios con columnas Paciente y Vehículo.");
+            return;
+          }
+
+          const filasServicios = hojaElegida.hojaServicios.filas;
+          const todos = mapearServicios(filasServicios);
+          // La hoja "coordinacion" de la Asignación de móviles no trae columna Estado: ahí no se
+          // puede excluir nada y el KPI lo dice en vez de mostrar un 0 que parece un filtro aplicado.
+          canceladosExcluidos = {
+            traeColumna: Object.keys(filasServicios[0] || {}).some(llave => normalizar(llave) === 'ESTADO'),
+            cantidad: todos.filter(s => estaCancelado(s.Estado)).length
+          };
+          const servicios = todos.filter(s => !estaCancelado(s.Estado));
+          const flota = mapearFlota(hojaElegida.hojaFlota ? hojaElegida.hojaFlota.filas : []);
+
+          datosUltimoExcel = { servicios, flota };
+          evaluarReglas(servicios, flota);
+        } catch (err) {
+          alert("Error al procesar el Excel: " + err.message);
+        }
+      };
+
+      reader.readAsArrayBuffer(file);
+    }
+
+    // Ocupación simultánea REAL de pasajeros (barrido de intervalos).
+    // Devuelve el pico máximo de personas a bordo a la vez y sus nombres.
+    function momentosABordo(lista) {
+      return lista.map((s, idx) => {
+        const r = mins(s.HoraRecogida);
+        let l = mins(s.HoraLlegada);
+        if (r == null || l == null || l <= r) return null;
+
+        // El pasajero deja el vehículo cuando el móvil lo deja en su pueblo destino,
+        // aunque su llegada estimada sea más tarde: si ahí mismo sube otro pasajero,
+        // el desembarco ocurrió antes de esa recogida. Sin esto, una cadena
+        // Ibagué→Espinal + Espinal→Purificación cuenta como 2 a bordo cuando es 1.
+        const destino = normalizar(s.CiudadDestino);
+        if (destino) {
+          lista.forEach((otro, j) => {
+            if (j === idx) return;
+            const ro = mins(otro.HoraRecogida);
+            if (ro != null && ro > r && ro < l && normalizar(otro.CiudadOrigen) === destino) l = ro;
+          });
+        }
+        return [r, l];
+      });
+    }
+
+    function ocupacionPico(lista) {
+      const eventos = [];
+      momentosABordo(lista).forEach((intervalo, idx) => {
+        if (!intervalo) return;
+        eventos.push([intervalo[0], 1, idx]);
+        eventos.push([intervalo[1], -1, idx]);
+      });
+      eventos.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+      const aBordo = new Set();
+      let pico = 0;
+      let conjuntoPico = new Set();
+      eventos.forEach(e => {
+        if (e[1] > 0) aBordo.add(e[2]); else aBordo.delete(e[2]);
+        // Una persona no ocupa dos asientos. Cuando el mismo paciente tiene dos filas
+        // que se solapan (el Excel duplica la solicitud, como los CS 1533908 y 1502182
+        // de Martinez Maldonado en el móvil 0773) cuenta una sola vez.
+        const pasajeros = new Set([...aBordo].map(i => normalizar(lista[i].Paciente)));
+        if (pasajeros.size > pico) { pico = pasajeros.size; conjuntoPico = new Set(aBordo); }
+      });
+      return { pico, nombres: [...new Set([...conjuntoPico].map(i => lista[i].Paciente))] };
+    }
+
+    // Compara normalizando acentos y mayúsculas (corrige nombres con Ñ/tilde).
+    function esPacienteExclusivo(nombre) {
+      const n = normalizar(nombre);
+      if (!n) return false;
+      return pacientesExclusivos.some(ex => n.includes(normalizar(ex)));
+    }
+
+    function evaluarReglas(servicios, flota) {
+      hallazgosGlobales = [];
+
+      const mapaFlota = {};
+      flota.forEach(c => {
+        if (!c.vehiculo) return;
+        const base = (c.BASE || c.ZONA || '').trim();
+        // La zona asignada manda desde la columna ZONA; si viene vacía o no es una
+        // zona válida, se deriva de la ciudad base como respaldo.
+        let zonaAsignada = ['NORTE', 'CENTRO', 'SUR'].includes(normalizar(c.ZONA))
+          ? normalizar(c.ZONA)
+          : obtenerZonaMunicipio(base);
+        mapaFlota[c.vehiculo] = { BASE: base, ZONA: (c.ZONA || '').trim(), zonaAsignada };
+      });
+
+      const agrupados = {};
+      servicios.forEach(s => {
+        if (!s.Vehiculo || !s.Fecha) return;
+        const key = `${s.Vehiculo}_${s.Fecha}`;
+        if (!agrupados[key]) agrupados[key] = [];
+        agrupados[key].push(s);
+      });
+
+      let conteoConflictos = 0;
+      let conteoUsuariosCompartidos = 0;
+      let conteoExclusivosCompartidos = 0;
+      let conteoInconsistenciasZona = 0;
+      let conteoVacio = 0;
+      let conteoSinFlota = 0;
+      const vehiculosSinFlota = new Set();
+      const hayFlota = flota.length > 0;
+      const movilesConServicios = new Set();
+
+      Object.keys(agrupados).forEach(key => {
+        const lista = agrupados[key].slice().sort((a, b) =>
+          (mins(a.HoraRecogida) ?? Number.MAX_SAFE_INTEGER) - (mins(b.HoraRecogida) ?? Number.MAX_SAFE_INTEGER));
+
+        const vehId = lista[0].Vehiculo;
+        movilesConServicios.add(vehId);
+        const vehInfo = mapaFlota[vehId];
+        const primerServicio = lista[0];
+        const ultimoServicio = lista[lista.length - 1];
+
+        // MÓVIL SIN REGISTRO EN FLOTA
+        // Solo cuando el archivo trae hoja de flota: un móvil que aparece en el
+        // listado es inevitablemente "desconocido" si no se cargó ninguna flota.
+        if (hayFlota && !vehInfo && !vehiculosSinFlota.has(vehId)) {
+          vehiculosSinFlota.add(vehId);
+          conteoSinFlota++;
+          hallazgosGlobales.push({
+            categoria: 'SIN_FLOTA',
+            tipo: 'ALERTA: Móvil no registrado en la flota',
+            vehiculo: vehId,
+            fecha: formatearFecha(primerServicio.Fecha),
+            detalle: `Regla: todo móvil con servicios debe aparecer en la hoja "carros". El Móvil <b>${vehId}</b> tiene servicios asignados pero no está registrado en la flota, por eso no se puede validar su zona ni su base.`
+          });
+        }
+
+        // VALIDACIÓN DE ZONAS (Norte, Centro, Sur)
+        if (vehInfo && vehInfo.zonaAsignada) {
+          const zonaInicioReal = obtenerZonaMunicipio(primerServicio.CiudadOrigen);
+          const zonaFinReal = obtenerZonaMunicipio(ultimoServicio.CiudadDestino);
+          let detallesZona = [];
+
+          if (zonaInicioReal && zonaInicioReal !== vehInfo.zonaAsignada) {
+            detallesZona.push(`empezó el día en <b>${primerServicio.CiudadOrigen}</b>, que es zona ${zonaInicioReal}`);
+          }
+          if (zonaFinReal && zonaFinReal !== vehInfo.zonaAsignada) {
+            detallesZona.push(`terminó el día en <b>${ultimoServicio.CiudadDestino}</b>, que es zona ${zonaFinReal}`);
+          }
+
+          if (detallesZona.length > 0) {
+            conteoInconsistenciasZona++;
+            hallazgosGlobales.push({
+              categoria: 'ZONA_INCOMPATIBLE',
+              tipo: 'ALERTA: Trabajó fuera de su zona asignada',
+              vehiculo: vehId,
+              fecha: formatearFecha(primerServicio.Fecha),
+              detalle: `Regla: cada móvil debe operar solo en su zona asignada. Este móvil está asignado a la zona <b>${vehInfo.zonaAsignada}</b> (base ${vehInfo.BASE}), pero ${detallesZona.join(' y ')}.`
+            });
+          }
+        }
+
+        // CAPACIDAD MÁXIMA: ocupación simultánea real (una sola alerta por móvil/día)
+        const ocupacion = ocupacionPico(lista);
+        if (ocupacion.pico > 2) {
+          conteoConflictos++;
+          hallazgosGlobales.push({
+            categoria: 'CRITICO',
+            tipo: 'CRÍTICO: Más de 2 pasajeros a la vez',
+            vehiculo: vehId,
+            fecha: formatearFecha(primerServicio.Fecha),
+            detalle: `Regla: máximo 2 pasajeros a bordo al mismo tiempo. Este móvil llegó a llevar <b>${ocupacion.pico} pasajeros simultáneos</b>: ${ocupacion.nombres.join(', ')}.`
+          });
+        }
+
+        // COMPARTIDOS Y EXCLUSIVIDAD (solapamiento temporal real entre servicios)
+        lista.forEach(actual => {
+          const ra = mins(actual.HoraRecogida);
+          const la = mins(actual.HoraLlegada);
+          if (ra == null || la == null) return;
+
+          const companeros = lista.filter(otro => {
+            if (otro === actual) return false;
+            const rb = mins(otro.HoraRecogida);
+            const lb = mins(otro.HoraLlegada);
+            if (rb == null || lb == null) return false;
+            return rb < la && lb > ra;
+          });
+
+          if (companeros.length > 0) conteoUsuariosCompartidos++;
+
+          const actualEsExclusivo = esPacienteExclusivo(actual.Paciente);
+          const companeroExclusivo = companeros.find(o => esPacienteExclusivo(o.Paciente));
+
+          if (companeros.length > 0 && (actualEsExclusivo || companeroExclusivo)) {
+            const nombreExclusivo = actualEsExclusivo ? actual.Paciente : companeroExclusivo.Paciente;
+            const otros = actualEsExclusivo ? companeros.map(c => c.Paciente).join(', ') : actual.Paciente;
+            conteoExclusivosCompartidos++;
+            hallazgosGlobales.push({
+              categoria: 'EXCLUSIVO_COMPARTIDO',
+              tipo: 'ALERTA: Paciente exclusivo viajó acompañado',
+              vehiculo: vehId,
+              fecha: formatearFecha(actual.Fecha),
+              detalle: `Regla: los pacientes exclusivos NO pueden compartir vehículo. <b>${nombreExclusivo}</b> es exclusivo y viajó en el Móvil ${vehId} acompañado de <b>${otros}</b>.`
+            });
+          }
+        });
+
+        // ANÁLISIS SECUENCIAL: multirecogida, ruta intermedia, solapamiento y vacío
+        // El móvil queda en el pueblo donde DEJÓ al último pasajero, y eso se mide en el
+        // momento real del desembarco, no en la llegada estimada del servicio: en una
+        // cadena Ibagué→Espinal + Espinal→Purificación el segundo viaje termina antes en
+        // el reloj aunque su llegada estimada sea mayor.
+        const finesABordo = momentosABordo(lista);
+        for (let i = 1; i < lista.length; i++) {
+          const actual = lista[i];
+          const previo = lista[i - 1];
+
+          const minsRecogidaActual = mins(actual.HoraRecogida);
+          const minsLlegadaPrevio = mins(previo.HoraLlegada);
+          const minsRecogidaPrevio = mins(previo.HoraRecogida);
+          if (minsRecogidaActual == null || minsLlegadaPrevio == null || minsRecogidaPrevio == null) continue;
+
+          const origPrev = normalizar(previo.CiudadOrigen);
+          const destPrev = normalizar(previo.CiudadDestino);
+          const origAct = normalizar(actual.CiudadOrigen);
+          const destAct = normalizar(actual.CiudadDestino);
+          const diffRecogidas = minsRecogidaActual - minsRecogidaPrevio;
+
+          // DOBLE ASIGNACIÓN: dos servicios que inician a la misma hora en puntos distintos
+          if (diffRecogidas === 0 && origPrev !== origAct) {
+            conteoConflictos++;
+            hallazgosGlobales.push({
+              categoria: 'CRITICO',
+              tipo: 'CRÍTICO: Dos recogidas a la misma hora en pueblos distintos',
+              vehiculo: vehId,
+              fecha: formatearFecha(actual.Fecha),
+              detalle: `Regla: un móvil no puede estar en dos lugares a la vez. Tiene dos servicios que <b>arrancan a la misma hora (${actual.HoraRecogida})</b>: uno en <b>${previo.CiudadOrigen}</b> (${previo.Paciente}) y otro en <b>${actual.CiudadOrigen}</b> (${actual.Paciente}).`
+            });
+            continue;
+          }
+
+          // RECOGIDA EN LA MISMA CIUDAD CON LÍMITE DE 30 MIN
+          if (origPrev === origAct) {
+            if (diffRecogidas >= 0 && diffRecogidas <= 30) {
+              continue;
+            } else if (diffRecogidas > 30 && minsRecogidaActual < minsLlegadaPrevio) {
+              conteoConflictos++;
+              hallazgosGlobales.push({
+                categoria: 'CRITICO',
+                tipo: 'CRÍTICO: Espera de más de 30 min entre recogidas del mismo pueblo',
+                vehiculo: vehId,
+                fecha: formatearFecha(actual.Fecha),
+                detalle: `Regla: entre dos recogidas en el mismo pueblo deben pasar máximo 30 min. Aquí pasaron <b>${diffRecogidas} min</b> en ${actual.CiudadOrigen} (${previo.Paciente} ${previo.HoraRecogida} y ${actual.Paciente} ${actual.HoraRecogida}).`
+              });
+              continue;
+            }
+          }
+
+          // RECOGIDAS INTERMEDIAS EN DIFERENTES CIUDADES DEL CORREDOR VIAL
+          if (minsRecogidaActual < minsLlegadaPrevio) {
+            if (origPrev !== origAct && esRecogidaEnCorredorValida(origPrev, destPrev, origAct, destAct)) {
+              continue;
+            } else if (origAct !== origPrev || destAct !== destPrev) {
+              conteoConflictos++;
+              hallazgosGlobales.push({
+                categoria: 'CRITICO',
+                tipo: 'CRÍTICO: Horarios cruzados sin corredor compartido',
+                vehiculo: vehId,
+                fecha: formatearFecha(actual.Fecha),
+                detalle: `Regla: si un servicio arranca antes de que termine el anterior, debe ser una recogida de paso del mismo corredor. Aquí el servicio de <b>${actual.Paciente}</b> (${actual.HoraRecogida}) arranca cuando el de <b>${previo.Paciente}</b> aún no termina (llegada estimada ~${previo.HoraLlegada}) y no comparten corredor.`
+              });
+            }
+          }
+
+          // DÓNDE QUEDÓ EL MÓVIL ANTES DE ESTA RECOGIDA
+          // Es el destino del servicio cuyo desembarco fue el último en el reloj. No se
+          // usa la llegada estimada cruda porque en una cadena de paradas el viaje más
+          // largo puede haber soltado a su pasajero antes, en el mismo pueblo donde otro
+          // sube.
+          const finalizadosAntes = [];
+          for (let j = 0; j < i; j++) {
+            if (finesABordo[j] && finesABordo[j][1] <= minsRecogidaActual) finalizadosAntes.push(j);
+          }
+
+          if (finalizadosAntes.length === 0) continue;
+
+          const finMaximo = Math.max(...finalizadosAntes.map(j => finesABordo[j][1]));
+          const empatados = finalizadosAntes.filter(j => finesABordo[j][1] === finMaximo);
+
+          // Dos servicios que terminan a la misma hora en pueblos distintos no pueden ser
+          // los dos: el móvil hizo una sola cadena de paradas. El último destino es el que
+          // queda más lejos del pueblo donde embarcó el primero de los dos, porque el otro
+          // quedó de paso en ese mismo camino.
+          let idxUltimoTerminado = empatados[0];
+          if (empatados.length > 1) {
+            const origenCadena = normalizar(lista[empatados[0]].CiudadOrigen);
+            let maxDistancia = -1;
+            empatados.forEach(j => {
+              const destino = normalizar(lista[j].CiudadDestino);
+              corredoresViales.forEach(corredor => {
+                const io = corredor.indexOf(origenCadena);
+                const jd = corredor.indexOf(destino);
+                if (io === -1 || jd === -1) return;
+                if (Math.abs(jd - io) > maxDistancia) {
+                  maxDistancia = Math.abs(jd - io);
+                  idxUltimoTerminado = j;
+                }
+              });
+            });
+          }
+          const ultimoTerminado = lista[idxUltimoTerminado];
+          const minsFinUltimo = finesABordo[idxUltimoTerminado][1];
+          const horaFinUltimo = String(Math.floor(minsFinUltimo / 60)).padStart(2, '0') + ':' +
+            String(minsFinUltimo % 60).padStart(2, '0');
+
+          const origPosicion = normalizar(ultimoTerminado.CiudadDestino);
+          const minsTraslado = minsRecogidaActual - minsFinUltimo;
+
+          // Si hay un servicio que ya iba en curso y arrancó en este mismo pueblo, el
+          // móvil ya está aquí: la recogida de paso se valida más arriba. Solo cuenta lo
+          // que empezó ANTES, porque otro servicio que arranca a esta misma hora en el
+          // mismo pueblo es precisamente lo que se está auditando.
+          const yaEstaEnElPueblo = lista.some(o => o !== actual &&
+            mins(o.HoraRecogida) != null && mins(o.HoraLlegada) != null &&
+            mins(o.HoraRecogida) < minsRecogidaActual && minsRecogidaActual < mins(o.HoraLlegada) &&
+            normalizar(o.CiudadOrigen) === origAct);
+
+          if (origPosicion !== origAct && minsTraslado <= 0) {
+            // Cero minutos de traslado: aunque los dos pueblos estén en el mismo
+            // corredor, el móvil no puede dejar a un pasajero y recoger a otro
+            // en otro pueblo en la misma hora.
+            conteoConflictos++;
+            hallazgosGlobales.push({
+              categoria: 'CRITICO',
+              tipo: 'CRÍTICO: Sin tiempo de traslado entre servicios',
+              vehiculo: vehId,
+              fecha: formatearFecha(actual.Fecha),
+              detalle: `Regla: el móvil debe terminar un servicio y tener tiempo de llegar al punto de la siguiente recogida. Dejó a ${ultimoTerminado.Paciente} en <b>${ultimoTerminado.CiudadDestino}</b> a las ~${horaFinUltimo} (hora estimada) y a <b>la misma hora</b> debe recoger a ${actual.Paciente} en <b>${actual.CiudadOrigen}</b>: no tiene ni un minuto de traslado.`
+            });
+          } else if (origPosicion !== origAct && !yaEstaEnElPueblo) {
+            // Los minutos libres solo sirven si alcanzan para el trayecto real entre los
+            // dos pueblos. Si no alcanzan, esto no es un vacío: es un servicio que no se
+            // puede cumplir a la hora asignada.
+            // Se usa SOLO la duración observada en el histórico (no el promedio
+            // aproximado de rutas vecinas) para no declarar crítico un salto entre
+            // pueblos vecinos del que no hay dato. El pronóstico de llegada sigue
+            // usando duracionTrayecto con su aproximación, sin cambios.
+            const minsTrayectoNecesario = (origPosicion !== origAct && origPosicion && origAct)
+              ? (duracionesRutas[origPosicion + '>' + origAct] ?? duracionesRutas[origAct + '>' + origPosicion])
+              : null;
+
+            if (minsTrayectoNecesario != null && minsTraslado < minsTrayectoNecesario) {
+              const minsTarde = minsTrayectoNecesario - minsTraslado;
+              const horaTarde = (minsRecogidaActual + minsTarde) % 1440;
+              conteoConflictos++;
+              hallazgosGlobales.push({
+                categoria: 'CRITICO',
+                tipo: 'CRÍTICO: No alcanza el traslado entre servicios',
+                vehiculo: vehId,
+                fecha: formatearFecha(actual.Fecha),
+                detalle: `Regla: el móvil debe alcanzar a ir del punto donde terminó al punto de la siguiente recogida. Dejó a ${ultimoTerminado.Paciente} en <b>${ultimoTerminado.CiudadDestino}</b> a las ~${horaFinUltimo} (hora estimada) y debe recoger a ${actual.Paciente} en <b>${actual.CiudadOrigen}</b> a las ${actual.HoraRecogida}: tiene <b>${minsTraslado} min</b> pero el trayecto <b>${ultimoTerminado.CiudadDestino} → ${actual.CiudadOrigen}</b> toma ~${minsTrayectoNecesario} min. Los tiempos no dan: o <b>llega ~${minsTarde} min tarde</b> (a las ~${String(Math.floor(horaTarde / 60)).padStart(2, '0')}:${String(horaTarde % 60).padStart(2, '0')}) y deja esperando a ${actual.Paciente}, o <b>deja esperando al usuario del servicio anterior</b> para alcanzar a salir antes.`
+              });
+
+              // El crítico anterior no borra el vacío: el móvil igual recorre ese tramo
+              // sin pasajeros, con tiempo de sobra o sin él. Son dos hallazgos distintos
+              // y pasan a la vez.
+              conteoVacio++;
+              hallazgosGlobales.push({
+                categoria: 'ADVERTENCIA',
+                tipo: 'ADVERTENCIA: Se movió sin pasajeros entre servicios',
+                vehiculo: vehId,
+                fecha: formatearFecha(actual.Fecha),
+                detalle: `Regla: evitar desplazamientos sin pasajeros. El móvil dejó a ${ultimoTerminado.Paciente} en <b>${ultimoTerminado.CiudadDestino}</b> a las ~${horaFinUltimo} (hora estimada) y tuvo que ir vacío hasta <b>${actual.CiudadOrigen}</b> para recoger a ${actual.Paciente} a las ${actual.HoraRecogida} (${minsTraslado} min de traslado).`
+              });
+            } else {
+              // Terminado el servicio anterior, el móvil está libre: todo recorrido hasta
+              // la siguiente recogida es sin pasajeros, esté o no en el mismo corredor.
+              conteoVacio++;
+              hallazgosGlobales.push({
+                categoria: 'ADVERTENCIA',
+                tipo: 'ADVERTENCIA: Se movió sin pasajeros entre servicios',
+                vehiculo: vehId,
+                fecha: formatearFecha(actual.Fecha),
+                detalle: `Regla: evitar desplazamientos sin pasajeros. El móvil dejó a ${ultimoTerminado.Paciente} en <b>${ultimoTerminado.CiudadDestino}</b> a las ~${horaFinUltimo} (hora estimada) y tuvo que ir vacío hasta <b>${actual.CiudadOrigen}</b> para recoger a ${actual.Paciente} a las ${actual.HoraRecogida} (${minsTraslado} min de traslado).`
+              });
+            }
+          }
+        }
+
+        // CASO ESPECIAL: el mismo momento admite dos lecturas y las dos son válidas.
+        // No se elige ninguna ni se cambia el resto del reporte: solo se marca para
+        // revisar el móvil a mano en el Excel.
+        const confusos = [];
+        lista.forEach((s, idxS) => {
+          const r = mins(s.HoraRecogida);
+          if (r == null || !s.CiudadOrigen) return;
+
+          // Lectura 1: recogida de paso de un servicio que todavía va en curso y que
+          // llegó de OTRO pueblo. Si ese servicio también sale de este mismo pueblo, las
+          // dos lecturas dicen lo mismo y no hay nada ambiguo. Tampoco hay recogida "de
+          // paso" si este pueblo es el destino de ese servicio: ahí el recorrido ya
+          // terminó y el móvil quedó libre, no está de paso (móvil 0711: Fresno→Ibagué y
+          // la recogida es en Ibagué).
+          const dePaso = lista.find(o => o !== s &&
+            mins(o.HoraRecogida) != null && mins(o.HoraLlegada) != null &&
+            mins(o.HoraRecogida) < r && r < mins(o.HoraLlegada) &&
+            normalizar(o.CiudadOrigen) !== normalizar(s.CiudadOrigen) &&
+            normalizar(o.CiudadDestino) !== normalizar(s.CiudadOrigen) &&
+            esRecogidaEnCorredorValida(o.CiudadOrigen, o.CiudadDestino, s.CiudadOrigen, s.CiudadDestino));
+
+          // Lectura 2: el móvil ya había terminado en este mismo pueblo, o sea estaba
+          // libre aquí y la salida es normal. Solo vale si ESE servicio es el último que
+          // el móvil cerró antes de esta recogida. Si después hizo otro recorrido, el móvil
+          // ya no está en ese pueblo y la lectura es imposible: en el móvil 0771 dejó a
+          // Parra en Espinal a las 11:45, pero a las 14:00 volvió a pasar por Espinal por
+          // el regreso de Saldaña, no porque se hubiera quedado allí desde la mañana.
+          let finPosicion = -1;
+          lista.forEach((o, j) => {
+            const f = finesABordo[j];
+            if (f && f[1] <= r && f[1] > finPosicion) finPosicion = f[1];
+          });
+          const yaLibre = finPosicion < 0 ? undefined :
+            lista.find((o, j) => j !== idxS && finesABordo[j] &&
+              finesABordo[j][1] === finPosicion &&
+              normalizar(o.CiudadDestino) === normalizar(s.CiudadOrigen));
+
+          // El móvil solo está LIBRE en un pueblo si a esa hora no le queda ningún
+          // pasajero a bordo de otro servicio. Si aún lleva a alguien, la recogida es de
+          // paso dentro de ese mismo recorrido: no son dos lecturas alternativas, es una
+          // sola. Móvil 0771/0721: sale de Ibagué con dos pasajeros (uno a Espinal, otro a
+          // Saldaña), en Espinal baja al primero y sube uno que va a Purificación, sigue a
+          // Saldaña y termina en Purificación. Siempre viajó con dos; el punto final del
+          // recorrido se extendió, no se abrió una segunda interpretación.
+          const aBordoEnR = lista.some((o, k) => k !== idxS && finesABordo[k] &&
+            finesABordo[k][0] < r && r < finesABordo[k][1]);
+
+          if (dePaso && yaLibre && !aBordoEnR) confusos.push({ s, dePaso, yaLibre, finLibre: finPosicion });
+        });
+
+        if (confusos.length > 0) {
+          hallazgosGlobales.push({
+            categoria: 'CASO_ESPECIAL',
+            tipo: 'CASO ESPECIAL: Trayecto confuso, revisar',
+            vehiculo: vehId,
+            fecha: formatearFecha(primerServicio.Fecha),
+            detalle: `Regla: hay dos formas de leer el mismo recorrido y las dos cumplen. ` + confusos.map(c =>
+              `<b>${c.s.Paciente}</b> (${c.s.HoraRecogida} en ${c.s.CiudadOrigen}) puede ser recogida de paso del servicio de <b>${c.dePaso.Paciente}</b> (${c.dePaso.CiudadOrigen}, en ruta hasta ~${c.dePaso.HoraLlegada}), o bien una salida normal porque el móvil ya lo había dejado a <b>${c.yaLibre.Paciente}</b> en ${c.yaLibre.CiudadDestino} a las ~${String(Math.floor(c.finLibre / 60)).padStart(2, '0')}:${String(c.finLibre % 60).padStart(2, '0')} (momento en que lo bajó, no la hora de llegada que trae la hoja).`
+            ).join(' ') + ` Revisar el móvil ${vehId} a mano.`
+          });
+        }
+      });
+
+      document.getElementById('kpiServicios').textContent = servicios.length;
+      // "Servicios revisados" ya no es el total de la hoja: es el total menos los Cancelados.
+      // Si la hoja no tiene cómo saber el estado, se dice en el propio KPI en vez de mostrar 0,
+      // que se leería como "no hubo ninguno".
+      document.getElementById('kpiCancelados').textContent = canceladosExcluidos.traeColumna
+        ? canceladosExcluidos.cantidad : '—';
+      document.getElementById('kpiCanceladosTitulo').textContent = canceladosExcluidos.traeColumna
+        ? 'Cancelados / Anulados excluidos' : 'Sin columna Estado: no se excluyó ninguno';
+      // Con la hoja "carros" este KPI siempre mostró el tamaño de la flota. El archivo
+      // de Traslados no trae flota, y ahí lo único que se puede contar son los móviles
+      // que sí tienen servicios.
+      document.getElementById('kpiVehiculos').textContent = hayFlota
+        ? Object.keys(mapaFlota).length
+        : movilesConServicios.size;
+      document.getElementById('kpiUsuariosCompartidos').textContent = conteoUsuariosCompartidos;
+      document.getElementById('kpiExclusivosCompartidos').textContent = conteoExclusivosCompartidos;
+      document.getElementById('kpiInconsistenciasZona').textContent = conteoInconsistenciasZona;
+      document.getElementById('kpiConflictos').textContent = conteoConflictos;
+      document.getElementById('kpiVacio').textContent = conteoVacio;
+      document.getElementById('kpiSinFlota').textContent = conteoSinFlota;
+
+      // Sin hoja de flota no hay zona que validar ni móvil que esté "sin registrar", así
+      // que esos dos filtros se ocultan en vez de mostrar un reporte vacío.
+      const sinFlotaFiltro = !hayFlota;
+      document.getElementById('opFiltroZona').style.display = sinFlotaFiltro ? 'none' : '';
+      document.getElementById('opFiltroSinFlota').style.display = sinFlotaFiltro ? 'none' : '';
+      const selectTipo = document.getElementById('filtroTipo');
+      if (sinFlotaFiltro && ['ZONA_INCOMPATIBLE', 'SIN_FLOTA'].includes(selectTipo.value)) {
+        selectTipo.value = 'TODOS';
+      }
+
+      hallazgosGlobales.sort((a, b) => {
+        const porMovil = compararMoviles(a.vehiculo, b.vehiculo);
+        if (porMovil !== 0) return porMovil;
+        const fa = claveFecha(a.fecha), fb = claveFecha(b.fecha);
+        if (fa != null && fb != null && fa !== fb) return fa - fb;
+        return 0;
+      });
+
+      renderizarTabla(hallazgosGlobales);
+      renderizarResumenMoviles();
+    }
+
+    function renderizarResumenMoviles() {
+      const contenedor = document.getElementById('listaMoviles');
+      contenedor.innerHTML = '';
+
+      const porMovil = {};
+      hallazgosGlobales.forEach(item => {
+        const p = porMovil[item.vehiculo] || (porMovil[item.vehiculo] = { critico: 0, alerta: 0, vacio: 0, especial: 0 });
+        if (item.categoria === 'CRITICO') p.critico++;
+        else if (item.categoria === 'ADVERTENCIA') p.vacio++;
+        else if (item.categoria === 'CASO_ESPECIAL') p.especial++;
+        else p.alerta++;
+      });
+
+      const moviles = Object.entries(porMovil).sort((a, b) => compararMoviles(a[0], b[0]));
+
+      if (moviles.length === 0) {
+        contenedor.innerHTML = '<span style="font-size: 0.85rem; color: #94a3b8; font-style: italic;">No se encontraron inconsistencias en las asignaciones.</span>';
+        return;
+      }
+
+      moviles.forEach(entrada => {
+        const veh = entrada[0];
+        const p = entrada[1];
+        const partes = [];
+        if (p.critico) partes.push(p.critico + ' conflicto' + (p.critico > 1 ? 's' : ''));
+        if (p.alerta) partes.push(p.alerta + ' alerta' + (p.alerta > 1 ? 's' : ''));
+        if (p.vacio) partes.push(p.vacio + ' tramo vac' + (p.vacio > 1 ? 'íos' : 'ío'));
+        if (p.especial) partes.push(p.especial + ' caso especial');
+
+        const chip = document.createElement('div');
+        chip.className = 'movil-chip ' + (p.critico ? 'grave' : (p.alerta ? 'medio' : 'leve'));
+        chip.dataset.movil = veh;
+        chip.innerHTML = `<div class="movil-id">${veh}</div><div class="movil-cuentas">${partes.join(' · ')}</div>`;
+        chip.onclick = () => seleccionarMovil(veh);
+        contenedor.appendChild(chip);
+      });
+
+      marcarChipActivo();
+    }
+
+    function seleccionarMovil(veh) {
+      const input = document.getElementById('filtroVehiculo');
+      input.value = input.value.trim() === veh ? '' : veh;
+      filtrarResultados();
+      document.querySelector('.panel:last-of-type').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function verTodosMoviles() {
+      document.getElementById('filtroVehiculo').value = '';
+      filtrarResultados();
+    }
+
+    function marcarChipActivo() {
+      const activo = document.getElementById('filtroVehiculo').value.trim().toLowerCase();
+      document.querySelectorAll('.movil-chip').forEach(chip => {
+        chip.classList.toggle('activa', chip.dataset.movil.toLowerCase() === activo);
+      });
+      document.getElementById('btnVerTodos').style.display = activo ? 'inline-block' : 'none';
+    }
+
+    function renderizarTabla(datos) {
+      const tbody = document.getElementById('tbodyHallazgos');
+      tbody.innerHTML = '';
+
+      if (datos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No se encontraron hallazgos o conflictos.</td></tr>';
+        return;
+      }
+
+      datos.forEach(item => {
+        const tr = document.createElement('tr');
+
+        let badgeClass = 'info';
+        if (item.categoria === 'CRITICO') badgeClass = 'critico';
+        if (item.categoria === 'EXCLUSIVO_COMPARTIDO') badgeClass = 'exclusivo-compartido';
+        if (item.categoria === 'ZONA_INCOMPATIBLE') badgeClass = 'zona-incompatible';
+        if (item.categoria === 'ADVERTENCIA') badgeClass = 'advertencia';
+        if (item.categoria === 'CASO_ESPECIAL') badgeClass = 'caso-especial';
+        if (item.categoria === 'SIN_FLOTA') badgeClass = 'sin-flota';
+
+        tr.innerHTML = `
+          <td><span class="badge ${badgeClass}">${item.tipo}</span></td>
+          <td><b>${item.vehiculo}</b></td>
+          <td>${item.fecha}</td>
+          <td>${item.detalle}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filtrarResultados() {
+      const tipo = document.getElementById('filtroTipo').value;
+      const veh = document.getElementById('filtroVehiculo').value.trim().toLowerCase();
+
+      const filtrados = hallazgosGlobales.filter(item => {
+        const cumpleTipo = (tipo === 'TODOS') || (item.categoria === tipo);
+        const cumpleVeh = !veh || item.vehiculo.toLowerCase().includes(veh);
+        return cumpleTipo && cumpleVeh;
+      });
+
+      renderizarTabla(filtrados);
+      marcarChipActivo();
+    }
+  </script>
+</body>
+</html>
